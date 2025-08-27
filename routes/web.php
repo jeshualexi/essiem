@@ -1,17 +1,11 @@
 <?php
 
 use App\Enum\PermissionsEnum;
-<<<<<<< HEAD
-use App\Http\Controllers\Admin\MaterialController;
-use App\Http\Controllers\Admin\MaterialValuationController;
-use App\Http\Controllers\Admin\UserController;
-=======
 use App\Http\Controllers\Admin\ChgHeader;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MaterialValuationController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ChgController;
->>>>>>> other/dev
 use App\Http\Controllers\AlternativeUomController;
 use App\Http\Controllers\ApproverController;
 use App\Http\Controllers\AttachmentController;
@@ -90,11 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/val-price-import', [MaterialValuationController::class, 'import'])->name('val_price.import');
     Route::get('/val-price-download-error', [MaterialValuationController::class, 'export'])->name('val_price.download.error');
 
-<<<<<<< HEAD
-=======
     Route::resource('/audit', ChgController::class)->only(['index', 'store', 'update']);
 
->>>>>>> other/dev
     // Route::middleware(['can:'.PermissionsEnum::Admin->value])->group(function () {
     Route::get('/vendors', [VendorController::class, 'index'])->name('vendor.index');
     Route::post('/vendor-store', [VendorController::class, 'store'])->name('vendor.store');

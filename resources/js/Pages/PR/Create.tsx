@@ -1,8 +1,4 @@
-<<<<<<< HEAD
- zimport AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-=======
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
->>>>>>> other/dev
 import { Head, Link, useForm } from '@inertiajs/react';
 import { PageProps, IPRMaterial, IPRHeader, Choice, IAlternativeUom } from '@/types';
 import { Button, Textarea, Input, Label, Toaster, useToast } from '@/Components/ui/';
@@ -26,10 +22,6 @@ import { CUSTOM_DATA_SHEET_STYLE, DATE_TODAY, DEFAULT_PR_MATERIAL, PermissionsEn
 import { can } from '@/lib/helper';
 import { LetterText, Paperclip } from 'lucide-react';
 
-<<<<<<< HEAD
-=======
-
->>>>>>> other/dev
 const Create = ({
   auth,
   mat_code,
@@ -60,11 +52,7 @@ const Create = ({
   const [material, setMaterial] = useState<IPRMaterial[]>(initialMaterial);
   const { toast } = useToast();
   const [files, setFiles] = useState([]);
-<<<<<<< HEAD
-  const { updateMaterialPR, computeConversion, isLoading } = usePRMaterial();
-=======
   const { updateMaterialPR, computeConversion, isLoading, getMaterialInfo } = usePRMaterial();
->>>>>>> other/dev
   const { validateMaterials } = usePRMaterialValidation();
   const { data, setData, post, errors, reset, processing } = useForm<IPRHeader>({
     id: 0,
@@ -81,10 +69,7 @@ const Create = ({
     deliv_addr: '',
     prmaterials: [],
   });
-<<<<<<< HEAD
-=======
   const [isMaterialRefreshing, setIsMaterialRefreshing] = useState(false);
->>>>>>> other/dev
 
   const handleOnChangeUom = (value: string, rowIndex: number) => {
     setMaterial((prevMaterial) => {
@@ -264,9 +249,6 @@ const Create = ({
                   items={auth.user.plants}
                   valueKey="plant"
                   displayKey="name1"
-<<<<<<< HEAD
-                  onValueChange={(value) => setData('plant', value)}
-=======
                   onValueChange={async (value) => {
                     setIsMaterialRefreshing(true);
                     setData('plant', value);
@@ -289,7 +271,6 @@ const Create = ({
                     setMaterial(refreshedMaterial);
                     setIsMaterialRefreshing(false);
                   }}
->>>>>>> other/dev
                   value={data.plant}
                   displayValue={true}
                 />
@@ -299,11 +280,7 @@ const Create = ({
               </div>
               <div className="p-5 pt-0">
                 <DataSheetGrid
-<<<<<<< HEAD
-                 createRow={() => DEFAULT_PR_MATERIAL}
-=======
                   createRow={() => DEFAULT_PR_MATERIAL}
->>>>>>> other/dev
                   value={material}
                   onChange={updateMaterial}
                   columns={columns}
@@ -326,15 +303,11 @@ const Create = ({
                 <div className="justify-end grid grid-cols-8 gap-4">
                   {can(auth.user, PermissionsEnum.CreatePR) && ( //auth.permissions.pr.create && (
                     <>
-<<<<<<< HEAD
-                      <Button variant="outline" disabled={processing} className="bg-[#f8c110]  hover:border-gray-500 hover:bg-[#f8c110] ">
-=======
                       <Button
                         variant="outline"
                         disabled={processing || isMaterialRefreshing}
                         className="bg-[#f8c110]  hover:border-gray-500 hover:bg-[#f8c110] "
                       >
->>>>>>> other/dev
                         Save
                       </Button>
                       <Link

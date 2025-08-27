@@ -78,10 +78,7 @@ const Edit = ({
   );
   const [itemDetails, setItemDetails] = useState([]);
   const [files, setFiles] = useState([]);
-<<<<<<< HEAD
-=======
   const [isMaterialRefreshing, setIsMaterialRefreshing] = useState(false);
->>>>>>> other/dev
   const approverGrpId = auth.user.approvers
     .filter((approver) => approver.type === 'pr')
     .map((approver) => approver.plant + approver.seq + approver.prctrl_grp_id);
@@ -92,11 +89,7 @@ const Edit = ({
     prheader.status == STATUS_REJECTED ||
     !approverGrpId.includes(headerGrpId);
 
-<<<<<<< HEAD
-  const { updateMaterialPR, computeConversion, isLoading } = usePRMaterial();
-=======
   const { updateMaterialPR, computeConversion, isLoading, getMaterialInfo } = usePRMaterial();
->>>>>>> other/dev
   const { validateMaterials } = usePRMaterialValidation();
   const { data, setData, post, errors, reset, processing } = useForm<IPRHeader>({
     id: prheader.id,
@@ -455,9 +448,6 @@ const Edit = ({
                   items={auth.user.plants}
                   valueKey="plant"
                   displayKey="name1"
-<<<<<<< HEAD
-                  onValueChange={(value) => setData('plant', value)}
-=======
                   onValueChange={async (value) => {
                     setIsMaterialRefreshing(true);
                     setData('plant', value);
@@ -480,7 +470,6 @@ const Edit = ({
                     setMaterial(refreshedMaterial);
                     setIsMaterialRefreshing(false);
                   }}
->>>>>>> other/dev
                   value={data.plant}
                   displayValue={true}
                 />
@@ -517,13 +506,9 @@ const Edit = ({
                         type="submit"
                         variant="outline"
                         className="bg-[#f8c110] hover:border-gray-500 hover:bg-[#f8c110] disabled:cursor-not-allowed disabled:opacity-100 disabled:bg-gray-100"
-<<<<<<< HEAD
-                        disabled={prheader.appr_seq === SEQ_REJECT || processing || hasAnyPO || !isReady || !hasChanges()}>
-=======
                         disabled={
                           prheader.appr_seq === SEQ_REJECT || processing || hasAnyPO || !isReady || !hasChanges() || isMaterialRefreshing
                         }>
->>>>>>> other/dev
                         Save
                       </Button>
                       <Link

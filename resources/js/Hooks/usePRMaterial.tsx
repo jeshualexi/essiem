@@ -8,26 +8,12 @@ export default function usePRMaterial() {
   const [isLoading, setIsLoading] = useState(false);
 
   const getMaterialInfo = async (material: string, plant: string, doc_date: string) => {
-<<<<<<< HEAD
-    if (!materialCache[material]) {
-=======
     const cacheKey = `${material}_${plant}_${doc_date}`;
     if (!materialCache[cacheKey]) {
->>>>>>> other/dev
       try {
         const { data } = await window.axios.get(route('material.details'), {
           params: { material, plant, doc_date },
         });
-<<<<<<< HEAD
-        materialCache[material] = data?.data;
-      } catch (error) {
-        console.error(`Error fetching material info for "${material}":`, error);
-        materialCache[material] = null;
-      }
-    }
-
-    return materialCache[material];
-=======
         materialCache[cacheKey] = data?.data;
       } catch (error) {
         console.error(`Error fetching material info for "${material}":`, error);
@@ -35,7 +21,6 @@ export default function usePRMaterial() {
       }
     }
     return materialCache[cacheKey];
->>>>>>> other/dev
   };
 
   const computeConversion = (material: IPRMaterial, ord_unit: string, isGenericMaterial: boolean = false) => {
