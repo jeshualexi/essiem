@@ -89,7 +89,7 @@ return new class extends Migration
                         ) VALUES (
                             'Approvers', NEW.id, 'approvers', 'type',
                             change_no, 'U', OLD.type, NEW.type,
-                            'Changed type from \"' || COALESCE(OLD.type, '') || '\" to \"' || COALESCE(NEW.type, '') || '\"'
+                            'Type'
                         );
                     END IF;
 
@@ -182,20 +182,6 @@ return new class extends Migration
                             'Approvers', NEW.id, 'approvers', 'desc',
                             change_no, 'U', OLD.\"desc\", NEW.\"desc\",
                             'Description'
-                        );
-                    END IF;
-
-                    IF OLD.updated_by IS DISTINCT FROM NEW.updated_by THEN
-                        INSERT INTO chg_details (
-                            data_type, data_refno, data_table, data_field,
-                            data_chgno, data_chgtyp, data_oldvalue, data_newvalue, short_text
-                        ) VALUES (
-                            'Approvers', NEW.id, 'approvers', 'updated_by',
-                            change_no, 'U',
-                            (SELECT name FROM users WHERE id = OLD.updated_by),
-                            (SELECT name FROM users WHERE id = NEW.updated_by),
-                            'Changed updated_by from \"' || COALESCE((SELECT name FROM users WHERE id = OLD.updated_by), '') ||
-                            '\" to \"' || COALESCE((SELECT name FROM users WHERE id = NEW.updated_by), '') || '\"'
                         );
                     END IF;
 
