@@ -197,10 +197,13 @@ export interface IUserPage extends IPagination {
   data: User[];
 }
 
+<<<<<<< HEAD
+=======
 export interface ICHGHeaderPage extends IPagination {
   data: ICHGHeader[];
 }
 
+>>>>>>> other/dev
 export interface ILink {
   url: string | undefined;
   label: string;
@@ -623,7 +626,10 @@ export interface IDeliveryAddress {
 export interface IProcurementGroup {
   purch_grp: string;
   name1: string;
+<<<<<<< HEAD
 }
+=======
+}}}
 
 export interface ICHGHeader {
   data_chgno: number;
@@ -648,3 +654,4 @@ export interface ICHGDetails {
   data_newvalue: string;
   short_text: string;
 }
+>>>>>>> other/dev
