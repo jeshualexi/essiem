@@ -99,11 +99,7 @@ return new class extends Migration
                         ) VALUES (
                             'Approvers', NEW.id, 'approvers', 'type',
                             change_no, 'U', OLD.type, NEW.type,
-<<<<<<< HEAD
-                            'Type'
-=======
                             (SELECT col_description('approvers'::regclass, attnum) FROM pg_attribute WHERE attrelid = 'approvers'::regclass AND attname = 'type')
->>>>>>> 82439a5d8cae959e30d74d3b9439796711daa181
                         );
                     END IF;
 
@@ -195,11 +191,7 @@ return new class extends Migration
                         ) VALUES (
                             'Approvers', NEW.id, 'approvers', 'desc',
                             change_no, 'U', OLD.\"desc\", NEW.\"desc\",
-<<<<<<< HEAD
-                            'Description'
-=======
                             (SELECT col_description('approvers'::regclass, attnum) FROM pg_attribute WHERE attrelid = 'approvers'::regclass AND attname = 'desc')
->>>>>>> 82439a5d8cae959e30d74d3b9439796711daa181
                         );
                     END IF;
 
