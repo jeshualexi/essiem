@@ -13,9 +13,9 @@ jobs:
       - name: Run SOOS SAST Scan
         uses: soos-io/soos-sast-github-action@v1
         with:
-          client_id: ${{ secrets.SOOS_CLIENT_ID }}
-          api_key: ${{ secrets.SOOS_API_KEY }}
-          project_name: "SCM Lite"
+          clientId: ${{ secrets.SOOS_CLIENT_ID }}
+          apiKey: ${{ secrets.SOOS_API_KEY }}
+          projectName: "SCM Lite"
 
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
