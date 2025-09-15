@@ -1,14 +1,21 @@
 on: [push]
 
 jobs:
-  soos_sast_scan:
-    name: SOOS SAST Scan
+  semgrep_to_soos:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: Run SOOS SAST Scan
-        uses: soos-io/soos-sast-github-action@v1
+      - uses: actions/checkout@v3
+
+      # Run Semgrep and output SARIF
+      - name: Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep --config auto --sarif --output semgrep.sarif.json
+
+      # Upload SARIF into SOOS
+      - name: Upload SARIF to SOOS
+        uses: soos-io/soos-sast@v1
         with:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
-          project_name: "SCM Lite"
+          project_name: "SCM Lite GITHUB"
