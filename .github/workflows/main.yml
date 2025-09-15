@@ -27,7 +27,7 @@ jobs:
           output: semgrep.sarif.json
 
       # -------------------------------
-      # Run SOOS SAST with SARIF output
+      # Run SOOS SAST (JSON output)
       # -------------------------------
       - name: Run SOOS SAST Scan
         uses: soos-io/soos-sast-github-action@v1
@@ -35,9 +35,16 @@ jobs:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
           project_name: "SCM Lite"
-          export_format: SARIF
-          export_file_type: SARIF
+          export_file_type: Json
           output_directory: ./soos-results
+
+      # -------------------------------
+      # Convert SOOS JSON → SARIF
+      # -------------------------------
+      - name: Convert SOOS JSON to SARIF
+        run: |
+          pip install sarif-tools
+          sarif convert ./soos-results/*.json --output soos.sarif.json
 
       # -------------------------------
       # Upload both SARIF reports
@@ -50,4 +57,4 @@ jobs:
       - name: Upload SOOS SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ./soos-results/*.sarif.json
+          sarif_file: soos.sarif.json
