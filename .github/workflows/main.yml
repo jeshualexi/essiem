@@ -1,15 +1,53 @@
+name: SAST Scans (Semgrep + SOOS)
 
-on: [push]
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
 
 jobs:
-  soos_sast_scan:
-    name: SOOS SAST Scan
+  sast-scan:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # Run Semgrep with SARIF output
+      # -------------------------------
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+          generateSarif: "1"
+          output: semgrep.sarif.json
+
+      # -------------------------------
+      # Run SOOS SAST with SARIF output
+      # -------------------------------
       - name: Run SOOS SAST Scan
         uses: soos-io/soos-sast-github-action@v1
         with:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
-          project_name: "SCM LITE"
+          project_name: "SCM Lite"
+          export_format: SARIF
+          export_file_type: SARIF
+          output_directory: ./soos-results
+
+      # -------------------------------
+      # Upload both SARIF reports
+      # -------------------------------
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif.json
+
+      - name: Upload SOOS SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./soos-results/*.sarif.json
