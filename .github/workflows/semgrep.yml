@@ -28,13 +28,12 @@ jobs:
       - name: Save SARIF into repo (latest only)
         run: |
           mkdir -p security-reports
-          mv sarif.json security-reports/sarif.json
+          mv results.sarif.json security-reports/results.sarif.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add security-reports/results.sarif.json
           git commit -m "chore: update latest Semgrep scan results [skip ci]" || echo "No changes to commit"
           git push origin HEAD:${GITHUB_REF}
-
       - name: Save SARIF results as artifact
         if: always()
         uses: actions/upload-artifact@v4
