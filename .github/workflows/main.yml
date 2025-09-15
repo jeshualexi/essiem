@@ -15,7 +15,7 @@ jobs:
 
       # Run SOOS SAST
       - name: Run SOOS SAST Scan
-        uses: soos-io/soos-sast-github-action@v1
+        uses: soos-io/soos-sast-github-action@v1.4.3
         with:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
