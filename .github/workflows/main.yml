@@ -7,45 +7,38 @@ on:
     branches: ["master", "main"]
 
 jobs:
-  semgrep_soos_scan:
-    name: "Semgrep + SOOS Scan"
+  semgrep_scan:
+    name: Semgrep Static Analysis
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep:1.96.0 # Semgrep container
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
+      image: returntocorp/semgrep:1.96.0
     steps:
-      # Checkout repo
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Run Semgrep and generate SARIF
-      - name: Perform Semgrep Analysis
+      - uses: actions/checkout@v4
+      - name: Run Semgrep
         run: |
           mkdir -p security-reports
           semgrep scan -q --sarif --config auto . > security-reports/results.sarif.json
-
-      # Upload SARIF as artifact (optional, for download)
-      - name: Save SARIF results as artifact
+      - name: Upload SARIF as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: semgrep-scan-results
+          name: semgrep-results
           path: security-reports/results.sarif.json
 
-      # Upload SARIF to GitHub Security Dashboard (optional)
-      - name: Upload SARIF to GitHub Security Dashboard
-        uses: github/codeql-action/upload-sarif@v3
+  soos_scan:
+    name: SOOS SAST Scan
+    runs-on: ubuntu-latest
+    needs: semgrep_scan
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download SARIF artifact
+        uses: actions/download-artifact@v4
         with:
-          sarif_file: security-reports/results.sarif.json
-
-      # Run SOOS SAST and consume Semgrep SARIF
+          name: semgrep-results
+          path: security-reports
       - name: Run SOOS SAST Scan
         uses: soos-io/soos-sast-github-action@v1
         with:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
           project_name: "${{ github.repository }}"
-          source_code_path: security-reports   # directory containing results.sarif.json
+          source_code_path: security-reports
