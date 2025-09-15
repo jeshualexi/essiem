@@ -1,21 +1,32 @@
-on: [push]
+name: Semgrep + SOOS Integration
+
+on: [push, pull_request]
 
 jobs:
-  semgrep_to_soos:
+  semgrep_scan:
+    name: Semgrep Scan + Upload
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      # Run Semgrep and output SARIF
+      # Run Semgrep and generate SARIF
       - name: Run Semgrep
-        run: |
-          pip install semgrep
-          semgrep --config auto --sarif --output semgrep.sarif.json
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+          generateSarif: "1"
+          output: semgrep.sarif.json
 
-      # Upload SARIF into SOOS
+      # Upload SARIF to GitHub Security tab
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif.json
+
+      # Upload SARIF into SOOS Dashboard
       - name: Upload SARIF to SOOS
-        uses: soos-io/soos-sast@v1
+        uses: soos-io/soos-sast-github-action@v1
         with:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
-          project_name: "SCM Lite GITHUB"
+          project_name: "SCM Lite GitHub"
