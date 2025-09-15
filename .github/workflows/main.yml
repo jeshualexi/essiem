@@ -35,8 +35,8 @@ jobs:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
           project_name: "SCM Lite"
-          export_file_type: Json
-          output_directory: ./soos-results
+          export_format: "SAST"
+          export_file_type: "Json"
 
       # -------------------------------
       # Convert SOOS JSON → SARIF
