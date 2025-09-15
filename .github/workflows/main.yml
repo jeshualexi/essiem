@@ -17,7 +17,7 @@ jobs:
       - name: Run Semgrep
         run: |
           mkdir -p security-reports
-          semgrep scan -q --sarif --config auto . > security-reports/results.sarif.json
+          semgrep scan -q --sarif --config "p/owasp-top-10" . > security-reports/results.sarif.json
       - name: Upload SARIF as artifact
         uses: actions/upload-artifact@v4
         with:
