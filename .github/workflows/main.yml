@@ -17,9 +17,9 @@ jobs:
       - name: Run SOOS SAST Scan
         uses: soos-io/soos-sast-github-action@v1
         with:
-          clientId: ${{ secrets.SOOS_CLIENT_ID }}
-          apiKey: ${{ secrets.SOOS_API_KEY }}
-          projectName: "SCM Lite"
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "SCM Lite"
 
       # Run Semgrep and generate SARIF
       - name: Run Semgrep with SARIF output
