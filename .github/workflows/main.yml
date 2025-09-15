@@ -1,5 +1,5 @@
 # NOTE: you must have previously generated Sarif 2.1 files before running this task with the extension .sarif.json
-name : SOOS
+name : SOOS SAST
 on: [push]
 
 jobs:
@@ -14,4 +14,4 @@ jobs:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
           project_name: "SCM Lite GitActions"
-          source_code_path: security-reports/sarif.json
+          source_code_path: security-reports
