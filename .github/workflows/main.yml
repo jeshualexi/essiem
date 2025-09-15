@@ -1,17 +1,51 @@
-# NOTE: you must have previously generated Sarif 2.1 files before running this task with the extension .sarif.json
-name : SOOS SAST
-on: [push]
+name: Semgrep + SOOS SAST Scan
+
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+  push:
+    branches: ["master", "main"]
 
 jobs:
-  soos_sast_scan:
-    name: SOOS SAST Scan
+  semgrep_soos_scan:
+    name: "Semgrep + SOOS Scan"
     runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep:1.96.0 # Semgrep container
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
     steps:
-      - uses: actions/checkout@master
+      # Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Run Semgrep and generate SARIF
+      - name: Perform Semgrep Analysis
+        run: |
+          mkdir -p security-reports
+          semgrep scan -q --sarif --config auto . > security-reports/results.sarif.json
+
+      # Upload SARIF as artifact (optional, for download)
+      - name: Save SARIF results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-scan-results
+          path: security-reports/results.sarif.json
+
+      # Upload SARIF to GitHub Security Dashboard (optional)
+      - name: Upload SARIF to GitHub Security Dashboard
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: security-reports/results.sarif.json
+
+      # Run SOOS SAST and consume Semgrep SARIF
       - name: Run SOOS SAST Scan
         uses: soos-io/soos-sast-github-action@v1
         with:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
-          project_name: "SCM Lite GitActions"
-          source_code_path: security-reports
+          project_name: "${{ github.repository }}"
+          source_code_path: security-reports   # directory containing results.sarif.json
