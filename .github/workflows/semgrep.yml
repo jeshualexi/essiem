@@ -34,3 +34,10 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif.json
+
+      - name: Upload SARIF to SOOS
+        uses: soos-io/soos-sast@v1
+        with:
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "SCM Lite Github"
