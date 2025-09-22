@@ -1,0 +1,16 @@
+# NOTE: you must have previously generated Sarif 2.1 files before running this task with the extension .sarif.json
+
+on: [push]
+
+jobs:
+  soos_sast_scan:
+    name: SOOS SAST Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run SOOS SAST Scan
+        uses: soos-io/soos-sast-github-action@v1
+        with:
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "scm"
