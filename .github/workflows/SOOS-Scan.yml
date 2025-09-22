@@ -1,0 +1,5 @@
+# NOTE: you must have previously generated Sarif 2.1 files before running this task with the extension .sarif.json
+
+[ -d "./soos" ] && rm -rf "./soos"
+npm install --prefix ./soos @soos-io/soos-sast
+node ./soos/node_modules/@soos-io/soos-sast/bin/index.js --clientId=8gl4ae27b --apiKey=YTBiM2YxOWMtYTNkYi00N2I2LWI1NmEtMDE5MDA3NjY0NTE4 --projectName="<scm>"
