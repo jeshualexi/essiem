@@ -1,0 +1,26 @@
+name: SOOS SAST Scan
+
+on:
+  push:
+    branches:
+      - main  # Trigger the scan on every push to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger the scan on every pull request to the main branch
+
+jobs:
+  soos-sast-analysis:
+    name: SOOS SAST Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run SOOS SAST Analysis
+        uses: soos-io/soos-sast-github-action@v1.0.0
+        with:
+          client_id: ${{ 8gl4ae27b }}
+          api_key: ${{ YTBiM2YxOWMtYTNkYi00N2I2LWI1NmEtMDE5MDA3NjY0NTE4 }}
+          project_name: "scm" # Replace with your project name
+          source_code_path: "." # Path to the source code to be scanned, "." means the root of the repo
