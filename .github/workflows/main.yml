@@ -1,0 +1,14 @@
+on: [push]
+
+jobs:
+  soos-sca-analysis:
+    name: SOOS SCA Scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Run SOOS Scan
+      uses: soos-io/soos-sca-github-action@v2
+      with:
+        client_id: 8gl4ae27b
+        api_key: YTBiM2YxOWMtYTNkYi00N2I2LWI1NmEtMDE5MDA3NjY0NTE4
+        project_name: "scm"
