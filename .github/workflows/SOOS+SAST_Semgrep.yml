@@ -1,0 +1,7 @@
+pip install --upgrade pip
+python -m pip install semgrep
+semgrep scan --verbose --metrics=off --config=p/default --config=p/owasp-top-ten --config=p/cwe-top-25 --sarif --sarif-output=semgrep.sarif.json /path/to/scan
+
+[ -d "./soos" ] && rm -rf "./soos"
+npm install --prefix ./soos @soos-io/soos-sast
+node ./soos/node_modules/@soos-io/soos-sast/bin/index.js --clientId=8gl4ae27b --apiKey=YTBiM2YxOWMtYTNkYi00N2I2LWI1NmEtMDE5MDA3NjY0NTE4 --projectName="scm" --sourceCodePath=/path/to/scan
