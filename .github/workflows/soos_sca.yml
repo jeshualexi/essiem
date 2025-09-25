@@ -1,0 +1,35 @@
+name: SOOS SAST and SCA Example CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  soos_sast_analysis:
+    name: SOOS SAST Analysis Example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run SOOS SAST Analysis
+        uses: soos-io/soos-sast-github-action@v1.0.0
+        with:
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "scm"
+          source_code_path: "."
+
+  soos_sca_analysis:
+    name: SOOS SCA Analysis Example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run SOOS SCA Scan
+        uses: soos-io/soos-sca-github-action@v2
+        with:
+          project_name: "gbimadan/scm"
+          export_format: "Sarif"
+          export_file_type: "Json"
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
