@@ -1,4 +1,4 @@
-name: Semgrep SAST - Manual Install
+name: Semgrep SAST
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
 
       - name: Run Semgrep Scan
         run: |
-          semgrep ci --metrics=off --json --json-output=semgrep.json --sarif --output=semgrep.sarif
+          semgrep ci --sarif --output=semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
