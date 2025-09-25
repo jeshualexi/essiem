@@ -1,0 +1,59 @@
+name: CodeQL Scan & SOOS Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------
+      # STEP 1: CodeQL Initialization and Scan
+      # -----------------------------------------------
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          # IMPORTANT: Replace 'javascript' with your primary language (e.g., java, python, go, csharp)
+          languages: javascript 
+
+      - name: Perform CodeQL Analysis
+        # This step runs the analysis, generates the SARIF, and automatically
+        # uploads it to the GitHub Code Scanning tab for FREE on public repos.
+        # It also uploads the SARIF as an artifact named 'CodeQL-SARIF'.
+        uses: github/codeql-action/analyze@v3
+
+      # -----------------------------------------------
+      # STEP 2: Download the SARIF File for SOOS
+      # -----------------------------------------------
+      - name: Download CodeQL SARIF Artifact
+        # Downloads the SARIF file that CodeQL created and uploaded as an artifact.
+        uses: actions/download-artifact@v4
+        with:
+          name: CodeQL-SARIF
+          path: codeql_sarif_output # Download to this folder
+
+      # -----------------------------------------------
+      # STEP 3: Upload SARIF to SOOS
+      # -----------------------------------------------
+      - name: Upload SARIF to SOOS
+        uses: soos-io/soos-sast-github-action@v1
+        with:
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "scm" 
+          # Point SOOS to the SARIF file inside the downloaded folder
+          # The CodeQL output is typically named results.sarif
+          sast_file_path: 'codeql_sarif_output/**/*.sarif'
