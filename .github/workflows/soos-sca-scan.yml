@@ -1,14 +1,29 @@
-on: [push]
+name: SOOS SCA Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  soos-sca-analysis:
-    name: SOOS SCA Scan
+  soos-sca-scan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Run SOOS Scan
-      uses: soos-io/soos-sca-github-action@v2
-      with:
-        client_id: ${{ secrets.SOOS_CLIENT_ID }}
-        api_key: ${{ secrets.SOOS_API_KEY }}
-        project_name: "scm"
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js (or your project's language)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install 
+
+      - name: Run SOOS SCA Scan
+        uses: soos-io/soos-sca-github-action@v2
+        with:
+          soos_api_key: ${{ secrets.SOOS_API_KEY }}
+          soos_project_id: ${{ secrets.SOOS_PROJECT_ID }}
+          soos_project_name: 'scm'
