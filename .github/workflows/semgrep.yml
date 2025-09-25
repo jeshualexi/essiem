@@ -12,7 +12,8 @@ jobs:
 
     permissions:
       contents: read
-      security-events: write # This line grants the necessary permission
+      security-events: write
+      actions: read  # Add this line to grant necessary permissions
 
     steps:
       - name: Checkout repository
@@ -27,6 +28,6 @@ jobs:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v3 # Corrected to v3
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
