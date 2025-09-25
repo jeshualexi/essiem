@@ -8,7 +8,7 @@ on:
 
 jobs:
   codeql:
-    name: CodeQL Analysis
+    name: CodeQL Analysis & SOOS Upload
     runs-on: ubuntu-latest
 
     permissions:
@@ -20,8 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # STEP 1: CodeQL Initialization and Scan
-      # (This creates and uploads the CodeQL SARIF file as an artifact named 'CodeQL-SARIF')
+      # -----------------------------------------------
+      # STEP 1: CodeQL Analysis
+      # -----------------------------------------------
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -30,29 +31,21 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          output: codeql_sarif_output # Direct the SARIF output here
+          # This saves the SARIF file locally to this directory.
+          output: codeql_sarif_output 
 
       # -----------------------------------------------
-      # STEP 2: Download the CodeQL SARIF Artifact
-      # -----------------------------------------------
-      - name: Download CodeQL SARIF Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: CodeQL-SARIF
-          path: codeql_sarif_output
-
-      # -----------------------------------------------
-      # STEP 3: RENAME THE SARIF FILE (THE FIX)
+      # STEP 2: RENAME THE SARIF FILE (FOR SOOS)
       # -----------------------------------------------
       - name: Rename SARIF to .sarif.json for SOOS
-        # CodeQL output is typically named '<language>-results.sarif' (e.g., javascript-results.sarif)
-        # We find that file and rename it to the extension SOOS requires.
+        # The CodeQL SARIF file is created inside the 'codeql_sarif_output' folder.
+        # It's named something like 'javascript-results.sarif'.
         run: |
           SARIF_FILE=$(find ${{ github.workspace }}/codeql_sarif_output -name '*-results.sarif')
           mv "$SARIF_FILE" "${{ github.workspace }}/codeql_sarif_output/codeql_sast.sarif.json"
 
       # -----------------------------------------------
-      # STEP 4: Upload SARIF to SOOS
+      # STEP 3: Upload SARIF to SOOS
       # -----------------------------------------------
       - name: Upload SARIF to SOOS
         uses: soos-io/soos-sast-github-action@v1
@@ -60,5 +53,15 @@ jobs:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
           project_name: "scm" 
-          # Now the SOOS action will find the file because it matches the default pattern.
-          # We can also use 'sast_file_path: codeql_sarif_output/codeql_sast.sarif.json' for explicitness.
+          # The SOOS action will find the file because it matches the default **/*.sarif.json pattern.
+
+      # -----------------------------------------------
+      # STEP 4: Create Downloadable Artifact (OPTIONAL/DEBUG)
+      # -----------------------------------------------
+      # If you still want the artifact named 'CodeQL-SARIF' to appear on the run summary:
+      - name: Upload CodeQL SARIF Artifact (Downloadable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeQL-SARIF # This name is what your old download step was looking for!
+          path: codeql_sarif_output/codeql_sast.sarif.json
+          retention-days: 7
