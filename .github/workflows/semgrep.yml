@@ -12,7 +12,7 @@ jobs:
 
     permissions:
       contents: read
-      security-events: write
+      security-events: write # This line grants the necessary permission
 
     steps:
       - name: Checkout repository
@@ -22,12 +22,11 @@ jobs:
         run: pip install semgrep
 
       - name: Run Semgrep Scan
-        run: |
-          semgrep ci --sarif --output=semgrep.sarif
+        run: semgrep ci --sarif --output=semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3 # Corrected to v3
         with:
           sarif_file: semgrep.sarif
