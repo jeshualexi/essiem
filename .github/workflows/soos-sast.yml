@@ -50,4 +50,4 @@ jobs:
       - name: Upload SARIF to GitHub Code Scanning (if Advanced Security is enabled)
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: semgrep.sarif
+          sarif_file: semgrep.sarif.json
