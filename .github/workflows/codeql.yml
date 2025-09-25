@@ -20,33 +20,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # -----------------------------------------------
-      # STEP 1: CodeQL Initialization and Scan
-      # -----------------------------------------------
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          # IMPORTANT: Replace 'javascript' with your primary language (e.g., java, python, go, csharp)
-          languages: javascript 
+          languages: javascript # or your language
 
       - name: Perform CodeQL Analysis
-        # This step runs the analysis, generates the SARIF, and automatically
-        # uploads it to the GitHub Code Scanning tab for FREE on public repos.
-        # It also uploads the SARIF as an artifact named 'CodeQL-SARIF'.
+        # This step runs the analysis and saves the SARIF file locally.
+        # It does NOT automatically upload it as a downloadable artifact.
+        # We save the SARIF to a specific location for the next steps.
         uses: github/codeql-action/analyze@v3
-
-      # -----------------------------------------------
-      # STEP 2: Download the SARIF File for SOOS
-      # -----------------------------------------------
-      - name: Download CodeQL SARIF Artifact
-        # Downloads the SARIF file that CodeQL created and uploaded as an artifact.
-        uses: actions/download-artifact@v4
         with:
-          name: CodeQL-SARIF
-          path: codeql_sarif_output # Download to this folder
+          output: codeql_sarif_output # Direct the SARIF output here
 
       # -----------------------------------------------
-      # STEP 3: Upload SARIF to SOOS
+      # STEP 2: Make the CodeQL SARIF available for download (The FIX)
+      # -----------------------------------------------
+      # The SARIF file is saved at: codeql_sarif_output/<language>-results.sarif
+      # We need to explicitly upload it as a named artifact.
+      - name: Upload CodeQL SARIF Artifact for SOOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeQL-SARIF # This is the name your download step expects!
+          # CodeQL creates a file named '<language>-results.sarif' inside the output folder
+          path: codeql_sarif_output/*-results.sarif
+          retention-days: 7
+
+      # -----------------------------------------------
+      # STEP 3: Download the SARIF File for SOOS (This is now redundant but kept for clarity)
+      # -----------------------------------------------
+      # This step can actually be removed, as the next step can reference the file directly
+      # but we'll modify it to match the SOOS step's logic, referencing the output path.
+      
+      # -----------------------------------------------
+      # STEP 4: Upload SARIF to SOOS
       # -----------------------------------------------
       - name: Upload SARIF to SOOS
         uses: soos-io/soos-sast-github-action@v1
@@ -54,6 +61,5 @@ jobs:
           client_id: ${{ secrets.SOOS_CLIENT_ID }}
           api_key: ${{ secrets.SOOS_API_KEY }}
           project_name: "scm" 
-          # Point SOOS to the SARIF file inside the downloaded folder
-          # The CodeQL output is typically named results.sarif
+          # The SOOS action should now find the file in the new output folder
           sast_file_path: 'codeql_sarif_output/**/*.sarif'
