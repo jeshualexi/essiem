@@ -35,14 +35,23 @@ jobs:
           output: codeql_sarif_output 
 
       # -----------------------------------------------
-      # STEP 2: RENAME THE SARIF FILE (FOR SOOS)
+      # STEP 2: RENAME THE SARIF FILE (THE FIX)
       # -----------------------------------------------
       - name: Rename SARIF to .sarif.json for SOOS
-        # The CodeQL SARIF file is created inside the 'codeql_sarif_output' folder.
-        # It's named something like 'javascript-results.sarif'.
         run: |
-          SARIF_FILE=$(find ${{ github.workspace }}/codeql_sarif_output -name '*-results.sarif')
-          mv "$SARIF_FILE" "${{ github.workspace }}/codeql_sarif_output/codeql_sast.sarif.json"
+          # 1. Use find to locate the file, searching only the output directory
+          SARIF_FILE=$(find ./codeql_sarif_output -name '*-results.sarif')
+
+          # 2. Check if the file was found
+          if [ -z "$SARIF_FILE" ]; then
+            echo "Error: CodeQL SARIF file not found in ./codeql_sarif_output."
+            exit 1
+          fi
+          
+          # 3. Rename the found file
+          mv "$SARIF_FILE" "./codeql_sarif_output/codeql_sast.sarif.json"
+        
+# ... rest of the workflow ...
 
       # -----------------------------------------------
       # STEP 3: Upload SARIF to SOOS
