@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-      actions: read  # Add this line to grant necessary permissions
+      actions: read
 
     steps:
       - name: Checkout repository
@@ -27,12 +27,13 @@ jobs:
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-      - name: Upload Semgrep SARIF Artifact # ADD THIS STEP
+      # 👇 THIS NEW STEP SAVES THE FILE FOR DOWNLOAD
+      - name: Upload Semgrep SARIF Artifact
         uses: actions/upload-artifact@v3
         with:
           name: semgrep-sarif-report
           path: semgrep.sarif
-          retention-days: 5 # Optional: Set how long to keep the artifact
+          retention-days: 7 # The file will be available for 7 days
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
