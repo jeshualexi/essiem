@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3 # Still safe to use v3 for checkout
 
       - name: Install Semgrep
         run: pip install semgrep
@@ -27,15 +27,15 @@ jobs:
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-      # 👇 THIS NEW STEP SAVES THE FILE FOR DOWNLOAD
+      # FIX: Updated to v4 to resolve the deprecation error
       - name: Upload Semgrep SARIF Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # <<<-- THE FIX IS HERE
         with:
           name: semgrep-sarif-report
           path: semgrep.sarif
-          retention-days: 7 # The file will be available for 7 days
+          retention-days: 7 
 
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3 # Still uses v3, which is the current stable version for CodeQL uploads
         with:
           sarif_file: semgrep.sarif
