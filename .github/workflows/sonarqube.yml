@@ -42,8 +42,9 @@ jobs:
         with:
           projectBaseDir: ${{ github.workspace }}
           args: >
-            -Dsonar.projectKey=YOUR_PROJECT_KEY
+            -Dsonar.projectKey=essiem
             -Dsonar.sources=.
+            -Dsonar.organization=jeshualexi
 
       # ----------------------------------------------------------------------
       # 2. Check SonarQube Quality Gate Status
