@@ -45,6 +45,8 @@ jobs:
             -Dsonar.projectKey=jeshualexi_essiem
             -Dsonar.sources=.
             -Dsonar.organization=jeshualexi
+            -Dsonar.qualitygate.wait=true      
+            -Dsonar.scm.disabled=true          
 
       # ----------------------------------------------------------------------
       # 2. Check SonarQube Quality Gate Status
