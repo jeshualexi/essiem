@@ -37,10 +37,14 @@ jobs:
       # -----------------------------------------------
       # STEP 2: RENAME THE SARIF FILE (FOR SOOS)
       # -----------------------------------------------
+      # -----------------------------------------------
+      # STEP 2: RENAME THE SARIF FILE (FOR SOOS)
+      # -----------------------------------------------
       - name: Rename SARIF to .sarif.json for SOOS
         run: |
-          # 1. Use find to locate the file, recursively searching the output directory
-          SARIF_FILE=$(find ./codeql_sarif_output -name '*-results.sarif' | head -n 1)
+          # 1. Use find to locate the file, searching for the ACTUAL CodeQL output file.
+          # We use javascript.sarif because that's what the previous run showed.
+          SARIF_FILE=$(find ./codeql_sarif_output -name 'javascript.sarif' | head -n 1)
 
           # 2. Check if the file was found
           if [ -z "$SARIF_FILE" ]; then
