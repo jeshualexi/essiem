@@ -42,7 +42,7 @@ jobs:
         with:
           projectBaseDir: ${{ github.workspace }}
           args: >
-            -Dsonar.projectKey=essiem
+            -Dsonar.projectKey=essiem_repo
             -Dsonar.sources=.
             -Dsonar.organization=jeshualexi
 
