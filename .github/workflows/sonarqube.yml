@@ -14,7 +14,6 @@ jobs:
     permissions:
       contents: read
       packages: read
-      # Required by SonarQube Quality Gate Check to update PR status
       checks: write 
       pull-requests: write
       
@@ -22,7 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Disabling shallow clone is crucial for a full SonarQube analysis
           fetch-depth: 0 
       
       - name: Set up JDK 17 (Example for Java projects)
@@ -32,13 +30,13 @@ jobs:
           java-version: '17'
       
       # ----------------------------------------------------------------------
-      # 1. Run SonarQube Analysis (Using stable @master tag)
+      # 1. Run SonarQube Analysis (Requires correct SONAR_HOST_URL format)
       # ----------------------------------------------------------------------
       - name: SonarQube Analysis
-        # Note: Using @master or a specific version like @v2 is recommended 
-        # over @main to avoid "unable to find version" errors.
         uses: SonarSource/sonarqube-scan-action@master 
         env:
+          # ⚠️ CRITICAL FIX: The value of this secret MUST start with http:// or https://
+          # Example: https://sonarcloud.io or https://sonarqube.mycompany.com
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
@@ -48,20 +46,20 @@ jobs:
             -Dsonar.sources=.
 
       # ----------------------------------------------------------------------
-      # 2. Check SonarQube Quality Gate Status (Using stable @master tag)
+      # 2. Check SonarQube Quality Gate Status
       # ----------------------------------------------------------------------
       - name: SonarQube Quality Gate Check
         id: quality_gate_check
         uses: SonarSource/sonarqube-quality-gate-action@master
         env:
+          # This step also relies on the correctly formatted SONAR_HOST_URL
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           
       # ----------------------------------------------------------------------
-      # 3. Run SOOS SCA Analysis (CORRECTED ACTION NAME)
+      # 3. Run SOOS SCA Analysis
       # ----------------------------------------------------------------------
       - name: SOOS Software Composition Analysis (SCA)
-        # The correct repository is 'soos-sca-github-action'. Using the latest major version tag.
         uses: soos-io/soos-sca-github-action@v2
         env:
           SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
