@@ -1,67 +1,77 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# This workflow helps you trigger a SonarCloud analysis of your code and populates
-# GitHub Code Scanning alerts with the vulnerabilities found.
-# Free for open source project.
-
-# 1. Login to SonarCloud.io using your GitHub account
-
-# 2. Import your project on SonarCloud
-#     * Add your GitHub organization first, then add your repository as a new project.
-#     * Please note that many languages are eligible for automatic analysis,
-#       which means that the analysis will start automatically without the need to set up GitHub Actions.
-#     * This behavior can be changed in Administration > Analysis Method.
-#
-# 3. Follow the SonarCloud in-product tutorial
-#     * a. Copy/paste the Project Key and the Organization Key into the args parameter below
-#          (You'll find this information in SonarCloud. Click on "Information" at the bottom left)
-#
-#     * b. Generate a new token and add it to your Github repository's secrets using the name SONAR_TOKEN
-#          (On SonarCloud, click on your avatar on top-right > My account > Security
-#           or go directly to https://sonarcloud.io/account/security/)
-
-# Feel free to take a look at our documentation (https://docs.sonarcloud.io/getting-started/github/)
-# or reach out to our community forum if you need some help (https://community.sonarsource.com/c/help/sc/9)
-
-name: SonarCloud analysis
+name: CI/CD Pipeline - Code Quality and Security
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-permissions:
-  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+    types: [opened, synchronize, reopened]
 
 jobs:
-  Analysis:
+  analyze_and_check_quality:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: read
+      checks: write 
+      pull-requests: write
+      
     steps:
-      - name: Analyze with SonarCloud
-
-        # You can pin the exact commit or the version.
-        # uses: SonarSource/sonarcloud-github-action@v2.2.0
-        uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          # Additional arguments for the SonarScanner CLI
-          args:
-            # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
-            # mandatory
+          fetch-depth: 0 
+      
+      - name: Set up JDK 17 (Example for Java projects)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      # ----------------------------------------------------------------------
+      # 1. Run SonarQube Analysis (Requires correct SONAR_HOST_URL format)
+      # ----------------------------------------------------------------------
+      - name: SonarQube Analysis
+        uses: SonarSource/sonarqube-scan-action@master 
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ${{ github.workspace }}
+          args: >
             -Dsonar.projectKey=jeshualexi_essiem
+            -Dsonar.sources=.
             -Dsonar.organization=jeshualexi
-            # Comma-separated paths to directories containing main source files.
-            #-Dsonar.sources= # optional, default is project base directory
-            # Comma-separated paths to directories containing test source files.
-            #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
-            # Adds more detail to both client and server-side analysis logs, activating DEBUG mode for the scanner, and adding client-side environment variables and system properties to the server-side log of analysis report processing.
-            #-Dsonar.verbose= # optional, default is false
-          # When you need the analysis to take place in a directory other than the one from which it was launched, default is .
-          projectBaseDir: .
+
+      # ----------------------------------------------------------------------
+      # 2. Check SonarQube Quality Gate Status
+      # ----------------------------------------------------------------------
+      - name: SonarQube Quality Gate Check
+        id: quality_gate_check
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        env:
+          # This step also relies on the correctly formatted SONAR_HOST_URL
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          
+      # ----------------------------------------------------------------------
+      # 3. Run SOOS SCA Analysis
+      # ----------------------------------------------------------------------
+      - name: SOOS Software Composition Analysis (SCA)
+        uses: soos-io/soos-sca-github-action@v2
+        env:
+          SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
+          SOOS_API_KEY: ${{ secrets.SOOS_API_KEY }}
+        with:
+          project_name: 'My-SOOS-Project'
+          branch_name: ${{ github.ref_name }}
+
+      # ----------------------------------------------------------------------
+      # 4. Fail the build if the Quality Gate is NOT GREEN
+      # ----------------------------------------------------------------------
+      - name: Fail build on Quality Gate failure
+        if: steps.quality_gate_check.outputs.quality-gate-status != 'OK'
+        run: |
+          echo "SonarQube Quality Gate did not pass. Failing the build."
+          exit 1
