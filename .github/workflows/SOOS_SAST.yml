@@ -1,0 +1,53 @@
+name: Semgrep and SOOS SAST Integration
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  soos_sast_scan:
+    name: Semgrep Scan & SOOS Upload
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------
+      # STEP 1: GENERATE THE SARIF FILE (using Semgrep)
+      # -----------------------------------------------
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep Scan
+        # This command generates the required 'semgrep.sarif' file
+        run: semgrep ci --sarif --output=semgrep.sarif.json
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      # -----------------------------------------------
+      # STEP 2: UPLOAD THE SARIF FILE TO SOOS
+      # -----------------------------------------------
+      - name: Run SOOS SAST Scan & Upload
+        uses: soos-io/soos-sast-github-action@v1
+        with:
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "scm" # Your project name
+          # 💡 THIS IS THE MISSING KEY INPUT!
+          # It tells the SOOS action which file to upload.
+          sarif_file: 'semgrep.sarif' 
+
+      # -----------------------------------------------
+      # OPTIONAL: UPLOAD SARIF TO GITHUB CODE SCANNING
+      # -----------------------------------------------
+      - name: Upload SARIF to GitHub Code Scanning (if Advanced Security is enabled)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif.json
