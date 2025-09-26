@@ -33,7 +33,7 @@ jobs:
       # 1. Run SonarQube Analysis (Requires correct SONAR_HOST_URL format)
       # ----------------------------------------------------------------------
       - name: SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@master 
+        uses: SonarSource/sonarqube-scan-action@174f8360a05574d0a8fe9324af3c2f891ad33ddb
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -49,7 +49,7 @@ jobs:
       # ----------------------------------------------------------------------
       - name: SonarQube Quality Gate Check
         id: quality_gate_check
-        uses: SonarSource/sonarqube-quality-gate-action@master
+        uses: SonarSource/sonarqube-quality-gate-action@174f8360a05574d0a8fe9324af3c2f891ad33ddb
         env:
           # This step also relies on the correctly formatted SONAR_HOST_URL
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -59,7 +59,7 @@ jobs:
       # 3. Run SOOS SCA Analysis
       # ----------------------------------------------------------------------
       - name: SOOS Software Composition Analysis (SCA)
-        uses: soos-io/soos-sca-github-action@v2
+        uses: soos-io/soos-sca-github-action@b73d8502a2121bdcc40be9e05ee656d21f76b771
         env:
           SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
           SOOS_API_KEY: ${{ secrets.SOOS_API_KEY }}
