@@ -1,0 +1,62 @@
+name: Code and Dependency Security Scans
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for better SonarQube analysis relevancy
+          fetch-depth: 0 
+
+      # --- SOOS Dependency Analysis Step ---
+      - name: Run SOOS SCA Scan
+        # Replace with the official SOOS GitHub Action when available, 
+        # or use a standard 'run' step to execute the SOOS CLI.
+        # This example is a placeholder for a typical SOOS action.
+        uses: soos/soos-github-action@v1 # Example Action
+        with:
+          # Your SOOS configuration details (e.g., project name, scan type)
+          project_name: ${{ github.repository }}
+          # Pass SOOS credentials from GitHub secrets
+        env:
+          SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
+          SOOS_API_KEY: ${{ secrets.SOOS_API_KEY }} 
+          # You can add a fail_on_vulnerability: true flag to break the build here
+
+      # --- Build Step (Required for some Sonar Scanners) ---
+      - name: Build Project (e.g., npm install or maven build)
+        # Add your project-specific build commands here.
+        # Example for a Node.js project:
+        run: |
+          npm install
+
+      # --- SonarQube Cloud Static Analysis Step ---
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v2 # The recommended official action
+        env:
+          # Use the token stored in GitHub Secrets
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
+        with:
+          # Specify your SonarCloud organization key and project key
+          args: >
+            -Dsonar.projectKey=YOUR_PROJECT_KEY
+            -Dsonar.organization=YOUR_ORG_KEY
+            -Dsonar.host.url=https://sonarcloud.io
+            # Add any other required SonarScanner parameters here
+
+      - name: Wait for SonarQube Quality Gate Status
+        uses: SonarSource/sonarqube-check-quality-gate-action@v2
+        with:
+          # This step will block the workflow until the Quality Gate result is ready.
+          token: ${{ secrets.SONAR_TOKEN }}
