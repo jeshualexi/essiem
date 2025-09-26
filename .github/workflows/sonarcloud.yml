@@ -1,61 +1,78 @@
-name: SonarCloud Scan
+name: CI/CD Pipeline - Code Quality and Security
 
-# Triggers the workflow on push events to the main branch
-# and on pull requests targeting the main branch
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
     types: [opened, synchronize, reopened]
-  workflow_dispatch:
 
 jobs:
-  sonarcloud:
-    name: Build and Analyze
+  analyze_and_check_quality:
     runs-on: ubuntu-latest
-    
-    # Required to fetch the code and history
+
+    permissions:
+      contents: read
+      packages: read
+      checks: write 
+      pull-requests: write
+      
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Fetch depth 0 is recommended for accurate SCM and Git blame information
           fetch-depth: 0 
-
-      - name: Set up Java
+      
+      - name: Set up JDK 17 (Example for Java projects)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'maven' # Change 'maven' if you use a different build tool (e.g., 'gradle')
-
-      # 🛑 CRITICAL STEP: Consolidated Analysis and Quality Gate Check
-      # The "-Dsonar.qualitygate.wait=true" flag here makes a separate check step unnecessary.
+      
+      # ----------------------------------------------------------------------
+      # 1. Run SonarQube Analysis (Requires correct SONAR_HOST_URL format)
+      # ----------------------------------------------------------------------
       - name: SonarQube Analysis
-        # Using the stable tag @v3 to avoid the SHA download error
-        uses: SonarSource/sonarqube-scan-action@v3 
+        uses: SonarSource/sonarqube-scan-action@master 
         env:
-          # These secrets must be defined in your GitHub repository settings
+          # ⚠️ CRITICAL FIX: The value of this secret MUST start with http:// or https://
+          # Example: https://sonarcloud.io or https://sonarqube.mycompany.com
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          # Pass arguments directly to the scanner
+          projectBaseDir: ${{ github.workspace }}
           args: >
-            -Dsonar.projectKey=jeshualexi_essiem 
-            -Dsonar.organization=jeshualexi
+            -Dsonar.projectKey=YOUR_PROJECT_KEY
             -Dsonar.sources=.
-            -Dsonar.qualitygate.wait=true # This is what checks the Quality Gate status
-            -Dsonar.scm.disabled=true # Ensures CI Analysis overrides Automatic Analysis
 
-      # 🛑 SOOS Software Composition Analysis (SCA)
-      # You should secure this action with a full SHA later, but for now, we use @v2
+      # ----------------------------------------------------------------------
+      # 2. Check SonarQube Quality Gate Status
+      # ----------------------------------------------------------------------
+      - name: SonarQube Quality Gate Check
+        id: quality_gate_check
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        env:
+          # This step also relies on the correctly formatted SONAR_HOST_URL
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          
+      # ----------------------------------------------------------------------
+      # 3. Run SOOS SCA Analysis
+      # ----------------------------------------------------------------------
       - name: SOOS Software Composition Analysis (SCA)
-        uses: soos-io/soos-sca-github-action@v2 
+        uses: soos-io/soos-sca-github-action@v2
+        env:
+          SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
+          SOOS_API_KEY: ${{ secrets.SOOS_API_KEY }}
+        with:
+          project_name: 'My-SOOS-Project'
+          branch_name: ${{ github.ref_name }}
 
-      # 🛑 NOTE: The old separate Quality Gate Check step is REMOVED.
-      # The analysis step above now handles the Quality Gate status check.
-
-      # --- This is where any subsequent build or deployment steps would go ---
+      # ----------------------------------------------------------------------
+      # 4. Fail the build if the Quality Gate is NOT GREEN
+      # ----------------------------------------------------------------------
+      - name: Fail build on Quality Gate failure
+        if: steps.quality_gate_check.outputs.quality-gate-status != 'OK'
+        run: |
+          echo "SonarQube Quality Gate did not pass. Failing the build."
+          exit 1
