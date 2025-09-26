@@ -51,18 +51,27 @@ jobs:
           # 3. Rename the found file
           mv "$SARIF_FILE" "./codeql_sarif_output/codeql_sast.sarif.json"
         
-# ... rest of the workflow ...
 
-      # -----------------------------------------------
-      # STEP 3: Upload SARIF to SOOS
-      # -----------------------------------------------
-      - name: Upload SARIF to SOOS
-        uses: soos-io/soos-sast-github-action@v1
-        with:
-          client_id: ${{ secrets.SOOS_CLIENT_ID }}
-          api_key: ${{ secrets.SOOS_API_KEY }}
-          project_name: "scm" 
-          # The SOOS action will find the file because it matches the default **/*.sarif.json pattern.
+       - name: Rename SARIF to .sarif.json for SOOS
+        run: |
+          # 1. Use find to locate the file, recursively searching the output directory
+          # We use a slightly different pattern to ensure we catch the file.
+          SARIF_FILE=$(find ./codeql_sarif_output -name '*-results.sarif' | head -n 1)
+
+          # 2. Check if the file was found
+          if [ -z "$SARIF_FILE" ]; then
+            echo "::error::CodeQL SARIF file not found in ./codeql_sarif_output. Cannot proceed with SOOS upload."
+            # List contents to aid debugging
+            echo "Contents of codeql_sarif_output directory:"
+            ls -R ./codeql_sarif_output
+            exit 1
+          fi
+          
+          echo "Found SARIF file: $SARIF_FILE"
+          
+          # 3. Rename the found file to the SOOS required extension
+          # We move it to the same directory, but with the new name
+          mv "$SARIF_FILE" "./codeql_sarif_output/codeql_sast.sarif.json"
 
       # -----------------------------------------------
       # STEP 4: Create Downloadable Artifact (OPTIONAL/DEBUG)
