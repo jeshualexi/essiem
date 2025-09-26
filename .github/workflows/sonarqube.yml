@@ -11,24 +11,32 @@ jobs:
   analyze_and_check_quality:
     runs-on: ubuntu-latest
 
-    # NOTE: Your GITHUB_TOKEN permissions are now correct!
     permissions:
       contents: read
       packages: read
-      checks: write
+      # Required by SonarQube Quality Gate Check to update PR status
+      checks: write 
       pull-requests: write
       
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          # Disabling shallow clone is crucial for a full SonarQube analysis
           fetch-depth: 0 
       
+      - name: Set up JDK 17 (Example for Java projects)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
       # ----------------------------------------------------------------------
-      # 1. Run SonarQube Analysis (Changed @main to @master)
+      # 1. Run SonarQube Analysis (Using stable @master tag)
       # ----------------------------------------------------------------------
       - name: SonarQube Analysis
-        # Use a stable tag like @master or @v1 to fix the 'unable to find version' error.
+        # Note: Using @master or a specific version like @v2 is recommended 
+        # over @main to avoid "unable to find version" errors.
         uses: SonarSource/sonarqube-scan-action@master 
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -40,23 +48,21 @@ jobs:
             -Dsonar.sources=.
 
       # ----------------------------------------------------------------------
-      # 2. Check SonarQube Quality Gate Status (Changed @main to @master)
+      # 2. Check SonarQube Quality Gate Status (Using stable @master tag)
       # ----------------------------------------------------------------------
       - name: SonarQube Quality Gate Check
         id: quality_gate_check
-        # Use a stable tag like @master or @v1 to fix the 'unable to find version' error.
         uses: SonarSource/sonarqube-quality-gate-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           
       # ----------------------------------------------------------------------
-      # 3. Run SOOS Analysis (Still unverified - use the latest confirmed tag)
+      # 3. Run SOOS SCA Analysis (CORRECTED ACTION NAME)
       # ----------------------------------------------------------------------
-      - name: SOOS Analysis (Dependency Vulnerabilities)
-        # ⚠️ This Action may still fail if the latest version is not 'v2'. 
-        # Please check the SOOS Marketplace listing for the current tag.
-        uses: soos-io/soos-ci-github-action@v2
+      - name: SOOS Software Composition Analysis (SCA)
+        # The correct repository is 'soos-sca-github-action'. Using the latest major version tag.
+        uses: soos-io/soos-sca-github-action@v2
         env:
           SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
           SOOS_API_KEY: ${{ secrets.SOOS_API_KEY }}
@@ -65,7 +71,7 @@ jobs:
           branch_name: ${{ github.ref_name }}
 
       # ----------------------------------------------------------------------
-      # 4. Optional: Fail the build if the Quality Gate is NOT GREEN
+      # 4. Fail the build if the Quality Gate is NOT GREEN
       # ----------------------------------------------------------------------
       - name: Fail build on Quality Gate failure
         if: steps.quality_gate_check.outputs.quality-gate-status != 'OK'
