@@ -45,16 +45,7 @@ jobs:
             -Dsonar.organization=jeshualexi
             -Dsonar.qualitygate.wait=true 
 
-      # ----------------------------------------------------------------------
-      # 2. Check SonarQube Quality Gate Status
-      # ----------------------------------------------------------------------
-      - name: SonarQube Quality Gate Check
-        id: quality_gate_check
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        env:
-          # This step also relies on the correctly formatted SONAR_HOST_URL
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  
           
       # ----------------------------------------------------------------------
       # 3. Run SOOS SCA Analysis
