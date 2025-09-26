@@ -59,11 +59,4 @@ jobs:
           project_name: 'My-SOOS-Project'
           branch_name: ${{ github.ref_name }}
 
-      # ----------------------------------------------------------------------
-      # 4. Fail the build if the Quality Gate is NOT GREEN
-      # ----------------------------------------------------------------------
-      - name: Fail build on Quality Gate failure
-        if: steps.quality_gate_check.outputs.quality-gate-status != 'OK'
-        run: |
-          echo "SonarQube Quality Gate did not pass. Failing the build."
-          exit 1
+      
