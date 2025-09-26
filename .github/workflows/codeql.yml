@@ -35,33 +35,17 @@ jobs:
           output: codeql_sarif_output 
 
       # -----------------------------------------------
-      # STEP 2: RENAME THE SARIF FILE (THE FIX)
+      # STEP 2: RENAME THE SARIF FILE (FOR SOOS)
       # -----------------------------------------------
       - name: Rename SARIF to .sarif.json for SOOS
         run: |
-          # 1. Use find to locate the file, searching only the output directory
-          SARIF_FILE=$(find ./codeql_sarif_output -name '*-results.sarif')
-
-          # 2. Check if the file was found
-          if [ -z "$SARIF_FILE" ]; then
-            echo "Error: CodeQL SARIF file not found in ./codeql_sarif_output."
-            exit 1
-          fi
-          
-          # 3. Rename the found file
-          mv "$SARIF_FILE" "./codeql_sarif_output/codeql_sast.sarif.json"
-        
-
-       - name: Rename SARIF to .sarif.json for SOOS
-        run: |
           # 1. Use find to locate the file, recursively searching the output directory
-          # We use a slightly different pattern to ensure we catch the file.
           SARIF_FILE=$(find ./codeql_sarif_output -name '*-results.sarif' | head -n 1)
 
           # 2. Check if the file was found
           if [ -z "$SARIF_FILE" ]; then
             echo "::error::CodeQL SARIF file not found in ./codeql_sarif_output. Cannot proceed with SOOS upload."
-            # List contents to aid debugging
+            # List contents to aid debugging (optional, but good practice)
             echo "Contents of codeql_sarif_output directory:"
             ls -R ./codeql_sarif_output
             exit 1
@@ -70,16 +54,24 @@ jobs:
           echo "Found SARIF file: $SARIF_FILE"
           
           # 3. Rename the found file to the SOOS required extension
-          # We move it to the same directory, but with the new name
           mv "$SARIF_FILE" "./codeql_sarif_output/codeql_sast.sarif.json"
+          
+      # -----------------------------------------------
+      # STEP 3: Upload SARIF to SOOS
+      # -----------------------------------------------
+      - name: Upload SARIF to SOOS
+        uses: soos-io/soos-sast-github-action@v1
+        with:
+          client_id: ${{ secrets.SOOS_CLIENT_ID }}
+          api_key: ${{ secrets.SOOS_API_KEY }}
+          project_name: "scm" 
 
       # -----------------------------------------------
-      # STEP 4: Create Downloadable Artifact (OPTIONAL/DEBUG)
+      # STEP 4: Create Downloadable Artifact (OPTIONAL)
       # -----------------------------------------------
-      # If you still want the artifact named 'CodeQL-SARIF' to appear on the run summary:
       - name: Upload CodeQL SARIF Artifact (Downloadable)
         uses: actions/upload-artifact@v4
         with:
-          name: CodeQL-SARIF # This name is what your old download step was looking for!
+          name: CodeQL-SARIF
           path: codeql_sarif_output/codeql_sast.sarif.json
           retention-days: 7
